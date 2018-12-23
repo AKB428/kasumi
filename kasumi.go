@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -57,6 +58,8 @@ type AuthToken struct {
 }
 
 var wg sync.WaitGroup
+
+// goroutineの数
 var glNum = 200
 
 func main() {
@@ -64,6 +67,14 @@ func main() {
 	flag.Parse()
 	containerName := flag.Arg(0)
 	fmt.Print(containerName)
+
+	argGoroutineNum := flag.Arg(1)
+
+	if argGoroutineNum != "" {
+		glNum, _ = strconv.Atoi(argGoroutineNum)
+	}
+
+	fmt.Printf("%s %d", "gotoutine num = ", glNum)
 
 	const format = "20060102_150405"
 	logFileName := "./log/" + time.Now().Format(format) + ".log"
@@ -77,7 +88,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// JSONデコード
+
 	var conf Conf
 
 	if err := json.Unmarshal(bytes, &conf); err != nil {
@@ -93,7 +104,7 @@ func main() {
 	deleteFileCounter := 0
 
 	for {
-		// 指定されたフォルダを再帰的にリスト取得 <リストAPI>
+		// 指定されたコンテナのファイルリストをスライスに取得
 		objectList := getContainerList(token, conf.EndPoint, containerName)
 
 		log.Println(fmt.Sprintf("%s: %d", "objectList size", len(objectList)))
@@ -102,12 +113,18 @@ func main() {
 			break
 		}
 
-		// goroutineで100ぐらい一気に削除　　<削除API>
+		// もしファイル数が指定されたgoroutineの数よりも少ない場合はファイル数に合わせる
+		if len(objectList) < glNum {
+			log.Println(fmt.Sprintf("%s: %d < %d", "glNum < objectFileNum", glNum, len(objectList)))
+			glNum = len(objectList)
+		}
+
 		counter := 0
 
 		for _, url := range objectList {
 
 			wg.Add(1)
+			// goroutineで一気に削除(デフォルト200並列)
 			go deleteObject(token, url)
 
 			deleteFileCounter++
@@ -123,8 +140,6 @@ func main() {
 		// エラーは無視して順次削除を繰り返す
 	}
 
-	// TODO 処理時間カウント
-	// TODO 処理ファイル数カウント
 }
 
 //# curl -i 'https://********.jp/v2.0/tokens' -X POST -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"auth": {"tenantName": "1234567", "passwordCredentials": {"username": "1234567", "password": "************"}}}'
