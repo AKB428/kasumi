@@ -15,13 +15,12 @@ import (
 )
 
 type Conf struct {
-	AuthUrl  string    `json:"auth_url"`
-	TenantName  string `json:"tenantName"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	EndPoint string `json:"endPoint"`
+	AuthUrl    string `json:"auth_url"`
+	TenantName string `json:"tenantName"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	EndPoint   string `json:"endPoint"`
 }
-
 
 type AuthToken struct {
 	Access struct {
@@ -55,7 +54,6 @@ type AuthToken struct {
 	} `json:"access"`
 }
 
-
 var wg sync.WaitGroup
 var glNum = 200
 
@@ -79,7 +77,6 @@ func main() {
 	}
 	// JSONデコード
 	var conf Conf
-
 
 	if err := json.Unmarshal(bytes, &conf); err != nil {
 		log.Fatal(err)
@@ -129,11 +126,10 @@ func main() {
 }
 
 //# curl -i 'https://********.jp/v2.0/tokens' -X POST -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"auth": {"tenantName": "1234567", "passwordCredentials": {"username": "1234567", "password": "************"}}}'
-func GetToken(conf Conf) string{
+func GetToken(conf Conf) string {
 	//jsonStr := `{"tenantName":"` + tenatName + `","device":"` + device + `"}`
 
-
-	jsonStr := `{"auth": {"tenantName": "` + conf.TenantName +`", "passwordCredentials": {"username": "` + conf.Username +`", "password": "` + conf.Password +`"}}}`
+	jsonStr := `{"auth": {"tenantName": "` + conf.TenantName + `", "passwordCredentials": {"username": "` + conf.Username + `", "password": "` + conf.Password + `"}}}`
 
 	req, err := http.NewRequest(
 		"POST",
@@ -178,7 +174,7 @@ func GetToken(conf Conf) string{
 	return token
 }
 
-func GetContainerList(token string, baseUrl string, containerName string) []string{
+func GetContainerList(token string, baseUrl string, containerName string) []string {
 
 	url := baseUrl + containerName
 
@@ -198,13 +194,13 @@ func GetContainerList(token string, baseUrl string, containerName string) []stri
 
 	fmt.Print(string(body))
 
-    var objectList []string
+	var objectList []string
 	for _, v := range regexp.MustCompile("\r\n|\n\r|\n|\r").Split(string(body), -1) {
 
 		if v != "" {
 			//fmt.Println(i+1, ":", url + "/" +v)
 
-			objectList = append(objectList, url + "/" +v)
+			objectList = append(objectList, url+"/"+v)
 		}
 	}
 	return objectList
@@ -228,7 +224,6 @@ func DeleteObject(token string, url string) {
 	//body, _ := ioutil.ReadAll(response.Body)
 
 	//fmt.Println(response.Status) string 204 No Content
-
 
 	if response.StatusCode != 204 {
 		fmt.Println(response.Status)
