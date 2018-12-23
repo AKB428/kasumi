@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Conf ... ConoHa API sアクセス情報
+// Conf ... ConoHa API アクセス情報
 type Conf struct {
 	AuthURL    string `json:"auth_url"`
 	TenantName string `json:"tenantName"`
@@ -24,7 +24,7 @@ type Conf struct {
 	EndPoint   string `json:"endPoint"`
 }
 
-// AuthToken ... AuthT APIのレスポンスJSONを定義
+// AuthToken ... Auth APIのレスポンスJSONを定義
 type AuthToken struct {
 	Access struct {
 		Token struct {
@@ -144,7 +144,6 @@ func main() {
 
 //# curl -i 'https://********.jp/v2.0/tokens' -X POST -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"auth": {"tenantName": "1234567", "passwordCredentials": {"username": "1234567", "password": "************"}}}'
 func getToken(conf Conf) string {
-	//jsonStr := `{"tenantName":"` + tenatName + `","device":"` + device + `"}`
 
 	jsonStr := `{"auth": {"tenantName": "` + conf.TenantName + `", "passwordCredentials": {"username": "` + conf.Username + `", "password": "` + conf.Password + `"}}}`
 
@@ -157,7 +156,6 @@ func getToken(conf Conf) string {
 		fmt.Println(err)
 	}
 
-	// Content-Type 設定
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -169,12 +167,10 @@ func getToken(conf Conf) string {
 
 	fmt.Println(response.Status)
 
-	// body, error
 	body, _ := ioutil.ReadAll(response.Body)
 
 	fmt.Println(string(body))
 
-	//jsonBytes := ([]byte)(string(body))
 	data := new(AuthToken)
 
 	if err := json.Unmarshal(body, data); err != nil {
@@ -240,7 +236,7 @@ func deleteObject(token string, url string) {
 
 	//body, _ := ioutil.ReadAll(response.Body)
 
-	//fmt.Println(response.Status) string 204 No Content
+	//fmt.Println(response.Status) = string 204 No Content
 
 	if response.StatusCode != 204 {
 		fmt.Println(response.Status)
