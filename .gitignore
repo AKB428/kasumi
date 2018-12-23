@@ -18,3 +18,4 @@ conoha_v1_object_delete_tool.iml
 conf/conoha_api_v1_key.json
 log/*.log
 cosd
+kasumi

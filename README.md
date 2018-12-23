@@ -29,17 +29,23 @@ mv ./conf/conoha_api_v1_key_sample.json ./conf/conoha_api_v1_key.json
 }
 ```
 
+## ビルド
+
+```
+go build kasumi.go
+```
+
 
 ## 実行
 
 ```
- ./cosd /container_name_path
+ ./kasumi /container_name_path
 ```
 
 例えばオブジェクトストレージのルートに「image」というコンテナがある場合
 
 ```
- ./cosd /image
+ ./kasumi /image
 ```
 
 と実行すると中身のオブジェクトファイルを削除します
