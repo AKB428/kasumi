@@ -14,14 +14,16 @@ import (
 	"time"
 )
 
+// Conf ... ConoHa API sアクセス情報
 type Conf struct {
-	AuthUrl    string `json:"auth_url"`
+	AuthURL    string `json:"auth_url"`
 	TenantName string `json:"tenantName"`
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 	EndPoint   string `json:"endPoint"`
 }
 
+// AuthToken ... AuthT APIのレスポンスJSONを定義
 type AuthToken struct {
 	Access struct {
 		Token struct {
@@ -84,7 +86,7 @@ func main() {
 	// デコードしたデータを表示
 	fmt.Printf("%+v\n", conf)
 
-	token := GetToken(conf)
+	token := getToken(conf)
 
 	fmt.Println(token)
 
@@ -92,7 +94,7 @@ func main() {
 
 	for {
 		// 指定されたフォルダを再帰的にリスト取得 <リストAPI>
-		objectList := GetContainerList(token, conf.EndPoint, containerName)
+		objectList := getContainerList(token, conf.EndPoint, containerName)
 
 		log.Println(fmt.Sprintf("%s: %d", "objectList size", len(objectList)))
 
@@ -106,7 +108,7 @@ func main() {
 		for _, url := range objectList {
 
 			wg.Add(1)
-			go DeleteObject(token, url)
+			go deleteObject(token, url)
 
 			deleteFileCounter++
 			counter++
@@ -126,14 +128,14 @@ func main() {
 }
 
 //# curl -i 'https://********.jp/v2.0/tokens' -X POST -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"auth": {"tenantName": "1234567", "passwordCredentials": {"username": "1234567", "password": "************"}}}'
-func GetToken(conf Conf) string {
+func getToken(conf Conf) string {
 	//jsonStr := `{"tenantName":"` + tenatName + `","device":"` + device + `"}`
 
 	jsonStr := `{"auth": {"tenantName": "` + conf.TenantName + `", "passwordCredentials": {"username": "` + conf.Username + `", "password": "` + conf.Password + `"}}}`
 
 	req, err := http.NewRequest(
 		"POST",
-		conf.AuthUrl,
+		conf.AuthURL,
 		bytes.NewBuffer([]byte(jsonStr)),
 	)
 	if err != nil {
@@ -174,9 +176,9 @@ func GetToken(conf Conf) string {
 	return token
 }
 
-func GetContainerList(token string, baseUrl string, containerName string) []string {
+func getContainerList(token string, baseURL string, containerName string) []string {
 
-	url := baseUrl + containerName
+	url := baseURL + containerName
 
 	fmt.Println(url)
 
@@ -206,7 +208,7 @@ func GetContainerList(token string, baseUrl string, containerName string) []stri
 	return objectList
 }
 
-func DeleteObject(token string, url string) {
+func deleteObject(token string, url string) {
 	defer wg.Done()
 
 	// fmt.Println("DELETE: " + url)
